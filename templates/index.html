@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>树莓派性能监测</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        #wrapper{
+            width: 1300px;
+            margin: 50px auto;
+        }
+        #main{
+            width: 600px;
+            height: 400px;
+            float: left;
+        }
+        #main1{
+            width: 600px;
+            height: 400px;
+            float: left;
+        }
+    </style>
+    <!-- 引入 echarts.js -->
+    <script src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+</head>
+
+<body>
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="wrapper">
+        <div id="main"></div>
+        <div id="main1"></div>
+    </div>
+
+    <script src="/static/js/index.js"></script>
+
+    <script type="text/javascript">
+        const main = document.getElementById("main");
+        const main1 = document.getElementById("main1");
+
+        // 请求 URL
+        const getUrl = "http://192.168.66.2:8080/api/cpu";
+        const getUrl2 = "http://192.168.66.2:8080/api/ram";
+
+        // 初始话操作
+        init();
+        init2();
+
+        function init() {
+            // 获取 json 数据
+            var xhr = new XMLHttpRequest(),
+                data = ajax(xhr, getUrl);
+            data.then(data => {
+                // 渲染数据
+                render(JSON.parse(data));
+            }).catch(err => console.log(err));
+        }
+
+        function init2(){
+            // 获取 json 数据
+            var xhr = new XMLHttpRequest(),
+                data = ajax(xhr, getUrl2);
+            data.then(data => {
+                // 渲染数据
+                render2(JSON.parse(data));
+            }).catch(err => console.log(err));
+        }
+
+        function render2(data){
+            // 渲染第二个图：
+            var main1Chart = echarts.init(main1);
+
+            var option_main1 = {
+                title: {
+                    text: `树莓派内存开销，总内存${data.ram}`
+                },
+                tooltip: {},
+                legend: {},
+                xAxis: {
+                    name: "系统时间",
+                    data: data.arm_time
+                },
+                yAxis: {
+                    name: "内存使用量",
+                },
+                series: [{
+                    name: '',
+                    type: "line",
+                    data: data.ram_list
+                }]
+            }
+            main1Chart.setOption(option_main1);
+        }
+
+        function render(data) {
+            console.log(data);
+            // 基于准备好的dom，初始化echarts实例
+            var mainChart = echarts.init(main);
+
+            // 指定图表的配置项和数据
+            var option_main = {
+                title: {
+                    text: '树莓派CPU利用率'
+                },
+                tooltip: {},
+                legend: {},
+                xAxis: {
+                    data: data.cpu_name
+                },
+                yAxis: {},
+                series: [{
+                    name: '性能%',
+                    type: 'bar',
+                    data: data.cpu_list
+                }]
+            };
+            // 使用刚指定的配置项和数据显示图表。
+            mainChart.setOption(option_main);
+        }
+    </script>
+
+</body>
+
+</html>

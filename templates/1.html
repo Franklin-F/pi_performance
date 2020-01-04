@@ -1,0 +1,331 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>jquery测试</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/index.css">
+    <script src="/static/js/jquery-4.js"></script>
+    <script src="/static/js/echarts.min.js"></script>
+    <script>
+        $(document).ready(function () {
+        })
+    </script>
+</head>
+<body>
+<div id="wrapper">
+
+    <div id="cpu"></div>
+    <script type="text/javascript">
+
+
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('cpu'));
+        // 接受的json
+
+
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: '树莓派各cpu使用率'
+            },
+            tooltip: {},
+            legend: {
+                data: ['使用率(%)']
+            },
+            xAxis: {
+                //data: data.cpu_name
+            },
+            yAxis: {},
+            series: [{
+                name: '使用率(%)',
+                type: 'bar',
+                //data: data.cpu_list
+            }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+
+
+        function get_cpu() {
+            htmlobj = $.ajax({url: "http://192.168.66.2:8080/api/cpu", async: false}); //async如果为true后边的函数将不管ajax是否反回,继续运行
+            dataobj = htmlobj.responseText;
+            var cpu_data = JSON.parse(dataobj); // 将json数据转换为 JavaScript 对象
+            var cpu_name = cpu_data.cpu_name;
+            var cpu_list = cpu_data.cpu_list;
+
+
+            option.xAxis.data = cpu_name;
+            option.series[0].data = cpu_list;
+            myChart.setOption(option); // 渲染echats
+        }
+
+
+    </script>
+    <div id="ram"></div>
+    <script type="text/javascript">
+
+
+        //指定图标的配置和数据
+        option_ram = {
+            title: {},
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                data: ['内存使用MB', '缓冲使用数量', '缓存使用', '交换分区']
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            toolbox: {
+                feature: {
+                    saveAsImage: {}
+                }
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [
+                {
+                    name: '内存使用量MB',
+                    type: 'line',
+                    stack: '使用量',
+                },
+                {
+                    name: '缓冲使用数',
+                    type: 'line',
+                    stack: '总量',
+
+                },
+                {
+                    name: '缓存使用数MB',
+                    type: 'line',
+                    stack: '总量',
+
+                },
+                {
+                    name: '交换分区使用量',
+                    type: 'line',
+                    stack: '总量',
+
+                },
+            ]
+        };
+        //初始化echarts实例
+        var myChart_ram = echarts.init(document.getElementById('ram'));
+        var ram_used_list = [];
+        var ram_time_list = [];
+        var ram_buffers_list = [];
+        var ram_cache_list = [];
+        var ram_swap_list = [];
+
+        function to_list(data, datalist) {
+            datalist.push(data)
+            if (datalist.length > 5) {
+                datalist.splice(0, 1)
+            }
+            return datalist
+        }
+
+
+        function get_ram() {
+            htmlobj = $.ajax({url: "http://192.168.66.2:8080/api/ram", async: false}); //async如果为true后边的函数将不管ajax是否反回,继续运行
+            dataobj = htmlobj.responseText;
+            var ram_data = JSON.parse(dataobj); // 将json数据转换为 JavaScript 对象
+            var ram = ram_data.ram;
+
+
+            var used = to_list(ram_data.ram_used, ram_used_list);
+            var time = to_list(ram_data.ram_time, ram_time_list);
+            var buffers = to_list(ram_data.ram_buffers, ram_buffers_list);
+            var cache = to_list(ram_data.ram_cache, ram_cache_list);
+            var swap = to_list(ram_data.ram_swap, ram_swap_list);
+
+
+            option_ram.title.text = '内存利用情况,总内存' + ram + 'GB';
+            option_ram.xAxis.data = time;
+            option_ram.series[0].data = used;
+            option_ram.series[1].data = buffers;
+            option_ram.series[2].data = cache;
+            option_ram.series[3].data = swap;
+
+            myChart_ram.setOption(option_ram); // 渲染echats
+        }
+
+
+    </script>
+    <div id="disk"></div>
+    <script type="text/javascript">
+
+
+        //指定图标的配置和数据
+        option_disk = {
+            legend: {},
+            title: {},
+            tooltip: {},
+            dataset: {},
+            series: [{
+                type: 'pie',
+                radius: 60,
+                center: ['20%', '50%'],
+                encode: {
+                    itemName: 'product',
+
+                }
+            }, {
+                type: 'pie',
+                radius: 60,
+                center: ['50%', '50%'],
+                encode: {
+                    itemName: 'product',
+
+                }
+            }, {
+                type: 'pie',
+                radius: 60,
+                center: ['80%', '50%'],
+                encode: {
+                    itemName: 'product',
+
+                }
+            }]
+        };
+
+        //初始化echarts实例
+        var myChart_disk = echarts.init(document.getElementById('disk'));
+
+
+        function get_disk() {
+            htmlobj = $.ajax({url: "http://192.168.66.2:8080/api/disk", async: false}); //async如果为true后边的函数将不管ajax是否反回,继续运行
+            dataobj = htmlobj.responseText;
+            var disk_data = JSON.parse(dataobj); // 将json数据转换为 JavaScript 对象
+            var disk_name = disk_data.disk_name;
+            var disk_free = disk_data.disk_free;
+            var disk_used = disk_data.disk_used;
+            var disk_total = disk_data.disk_total;
+            var listt = [];
+            listt.push(disk_name, disk_free, disk_used);
+
+            option_disk.title.text = "磁盘分区情况,单位GB";
+
+            option_disk.dataset.source = listt;
+
+            option_disk.series[0].encode.value = disk_name[1];
+            option_disk.series[0].name = disk_name[1];
+            option_disk.series[1].encode.value = disk_name[2];
+            option_disk.series[1].name = disk_name[2];
+            option_disk.series[2].encode.value = disk_name[3];
+            option_disk.series[2].name = disk_name[3];
+
+            myChart_disk.setOption(option_disk); // 渲染echats
+        }
+
+
+    </script>
+    <div id="nets"></div>
+    <script type="text/javascript">
+
+        //指定图标的配置和数据
+        option_nets = {
+            title: {
+                text: '实时网速情况'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {},
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            toolbox: {
+                feature: {
+                    saveAsImage: {}
+                }
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [
+                {
+                    type: 'line',
+                    stack: '总量',
+                },
+                {
+                    type: 'line',
+                    stack: '总量',
+                },
+                {
+
+                    type: 'line',
+                    stack: '总量',
+                },
+            ]
+        };
+
+
+        //初始化echarts实例
+        var myChart_net = echarts.init(document.getElementById('nets'));
+
+        var time_list = [];
+        var wlan_list = [];
+        var eth_list = [];
+        var lo_list = [];
+
+        function to1_list(data, datalist) {
+            datalist.push(data);
+            if (datalist.length > 5) {
+                datalist.splice(0, 1)
+            }
+            return datalist
+        }
+
+
+        function get_nets() {
+            htmlobj = $.ajax({url: "http://192.168.66.2:8080/api/net", async: false}); //async如果为true后边的函数将不管ajax是否反回,继续运行
+            dataobj = htmlobj.responseText;
+            var net_data = JSON.parse(dataobj); // 将json数据转换为 JavaScript 对象
+            var name_list = net_data.name_l;
+            var time_l = to1_list(net_data.time, time_list);
+            var wlan_l = to1_list(net_data.list[0], wlan_list);
+            var eth_l = to1_list(net_data.list[1], eth_list);
+            var lo_l = to1_list(net_data.list[2], lo_list);
+
+
+            option_nets.legend.data = name_list;
+            option_nets.xAxis.data = time_l;
+            option_nets.series[0].data = wlan_l;
+            option_nets.series[0].name = name_list[0];
+            option_nets.series[1].data = eth_l;
+            option_nets.series[1].name = name_list[1];
+            option_nets.series[2].data = lo_l;
+            option_nets.series[2].name = name_list[2];
+
+            myChart_net.setOption(option_nets); // 渲染echats
+        }
+
+
+        setInterval(function () {
+            get_nets();
+            get_disk();
+            get_cpu();
+            get_ram();
+        }, 5000);
+
+    </script>
+</div>
+
+</body>
+</html>

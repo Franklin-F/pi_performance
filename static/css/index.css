@@ -1,0 +1,31 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+#wrapper {
+    width: 1300px;
+    margin: 50px auto;
+}
+
+#cpu {
+    width: 600px;
+    height: 400px;
+    float: left;
+}
+
+#ram {
+    width: 600px;
+    height: 400px;
+    float: left;
+}
+#disk {
+    width: 600px;
+    height: 400px;
+    float: left;
+}
+#nets {
+    width: 600px;
+    height: 400px;
+    float: left;
+}
